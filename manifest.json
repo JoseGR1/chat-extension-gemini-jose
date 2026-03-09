@@ -20,9 +20,9 @@
         "https://gemini.google.com/*"
       ],
       "js": [
+        "src/content/dom.js",
         "src/content/storage.js",
         "src/content/platform/gemini.js",
-        "src/content/dom.js",
         "src/content/navigation.js",
         "src/content/ui.js",
         "src/content/main.js"

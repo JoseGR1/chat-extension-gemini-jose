@@ -28,19 +28,58 @@ const GeminiPlatform = {
         }
 
         return Array.from(queryElements).map((el, index) => {
-            // Clean up the text
-            let text = el.innerText.trim();
+            // 1. Get raw text
+            const rawText = el.innerText || '';
+            let text = rawText;
 
-            // Remove Gemini's internal "Tú dijiste" or "You said" etc. if they appear
-            // This handles cases where Gemini includes these as labels inside the query node
+            // 2. Remove Gemini-specific labels if they are at the start
             text = text.replace(/^(Tú dijiste|You said|You)\s+/i, '');
 
-            // Truncate for the navigation list
-            const displayText = text.length > 50 ? text.substring(0, 47) + '...' : text;
+            // 3. Detect specialized content (HTML, CSS, JS, Python, C++, Java)
+            let typePrefix = '';
+            const lowerText = text.toLowerCase();
+
+            // Language heuristics
+            if (lowerText.includes('<!doctype html>') || (lowerText.includes('<html') && lowerText.includes('</html>'))) {
+                typePrefix = 'HTML: ';
+            } else if (lowerText.includes('{') && lowerText.includes(':') && (lowerText.includes('background-') || lowerText.includes('margin:') || lowerText.includes('padding:'))) {
+                typePrefix = 'CSS: ';
+            } else if (lowerText.includes('import ') && lowerText.includes('def ') || lowerText.includes('print(') && !lowerText.includes(';') && !lowerText.includes('{')) {
+                typePrefix = 'Python: ';
+            } else if (lowerText.includes('#include') || lowerText.includes('std::') || lowerText.includes('iostream')) {
+                typePrefix = 'C++: ';
+            } else if (lowerText.includes('public class') || lowerText.includes('system.out.print') || lowerText.includes('public static void main')) {
+                typePrefix = 'Java: ';
+            } else if (lowerText.includes('function') || lowerText.includes('const ') || lowerText.includes('let ') || lowerText.includes('var ') || (lowerText.includes('=>') && lowerText.includes('{'))) {
+                typePrefix = 'JS: ';
+            }
+
+            // 4. Try to find a "name" (title)
+            let name = '';
+            const firstLine = text.split('\n')[0].trim();
+            if (firstLine.includes('<title>')) {
+                const titleMatch = firstLine.match(/<title>(.*?)<\/title>/i);
+                if (titleMatch) name = titleMatch[1];
+            } else if (firstLine.startsWith('/*') || firstLine.startsWith('//') || firstLine.startsWith('# ')) {
+                // Remove comment markers from names (supports JS, C++, Java, CSS AND Python/Shell)
+                name = firstLine.replace(/[\/\*\!\#]/g, '').trim();
+            }
+
+            // 5. Sanitize for display
+            text = DOMHelper.sanitize(text);
+
+            // 6. Build display text
+            let displayText = name || text;
+            if (displayText.length > 50) {
+                displayText = displayText.substring(0, 47) + '...';
+            }
+
+            // Add prefix if detected
+            displayText = typePrefix + displayText;
 
             return {
                 text: displayText,
-                fullText: text,
+                fullText: rawText,
                 element: el,
                 id: `gemini-nav-msg-${index}`
             };

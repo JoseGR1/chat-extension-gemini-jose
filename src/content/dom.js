@@ -57,6 +57,21 @@ const DOMHelper = {
                 func(...args);
             }, amount);
         };
+    },
+
+    /**
+     * Sanitizes a string by stripping HTML tags and normalizing whitespace.
+     * Useful for creating clean text previews from potential HTML/Code content.
+     * @param {string} text 
+     * @returns {string}
+     */
+    sanitize(text) {
+        if (!text) return '';
+
+        return text
+            .replace(/<[^>]*>?/gm, ' ') // Strip HTML tags
+            .replace(/\s+/g, ' ')      // Normalize whitespace
+            .trim();
     }
 };
 

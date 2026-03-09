@@ -3,6 +3,7 @@
  */
 const NavigationManager = {
     isManualScrolling: false,
+    currentLockId: 0,
 
     /**
      * The most robust way to navigate: find the element CURRENTLY at this index in the DOM.
@@ -11,8 +12,12 @@ const NavigationManager = {
      */
     scrollToIndex(index, isLast = false) {
         this.isManualScrolling = true;
+        const lockId = ++this.currentLockId;
 
         const perform = () => {
+            // Cancel if a newer navigation has started
+            if (this.currentLockId !== lockId) return;
+
             // RE-SCAN the DOM for the freshest references
             const messages = GeminiPlatform.getMessages();
             const target = messages[index];
@@ -49,9 +54,11 @@ const NavigationManager = {
             setTimeout(perform, delay);
         });
 
-        // 3. Unlock scroll-spy once we arrive
+        // 3. Unlock scroll-spy once we arrive, but only if no newer nav started
         setTimeout(() => {
-            this.isManualScrolling = false;
+            if (this.currentLockId === lockId) {
+                this.isManualScrolling = false;
+            }
         }, 3000);
     },
 
@@ -64,6 +71,7 @@ const NavigationManager = {
         if (!element || !document.body.contains(element)) return;
 
         this.isManualScrolling = true;
+        const lockId = ++this.currentLockId;
 
         const container = GeminiPlatform.getScrollContainer();
 
@@ -71,19 +79,18 @@ const NavigationManager = {
         this.flashElement(element);
 
         // 2. Specialized scroll for the last message
-        // Gemini's auto-scroll often fights us; forcing bottom is the most reliable way.
         if (isLast && container) {
             container.scrollTo({
                 top: container.scrollHeight,
                 behavior: 'smooth'
             });
 
-            // Re-attempt bottom scroll after a tiny bit to be extra sure
             setTimeout(() => {
-                container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+                if (this.currentLockId === lockId) {
+                    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+                }
             }, 100);
         } else {
-            // Standard centering for non-last elements
             element.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center'
@@ -92,14 +99,16 @@ const NavigationManager = {
 
         // 3. Re-scan and re-try just in case (High precision)
         setTimeout(() => {
-            if (element && document.body.contains(element)) {
+            if (this.currentLockId === lockId && element && document.body.contains(element)) {
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }, 300);
 
         // 4. Unlock scroll spy
         setTimeout(() => {
-            this.isManualScrolling = false;
+            if (this.currentLockId === lockId) {
+                this.isManualScrolling = false;
+            }
         }, 2000);
     },
 
