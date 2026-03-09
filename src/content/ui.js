@@ -23,9 +23,32 @@ const UIManager = {
         });
 
         this._renderBaseStructure();
+        this._updateTheme(); // Apply initial theme
         document.body.appendChild(this.container);
 
         this._setupGlobalListeners();
+        this._setupThemeObserver();
+    },
+
+    /**
+     * Detects if Gemini is in light mode and updates the navigator
+     */
+    _updateTheme() {
+        if (!this.container) return;
+
+        // Gemini uses 'light-mode' class on body or has a light background
+        const isLightMode = document.body.classList.contains('light-mode') || 
+                            window.getComputedStyle(document.body).backgroundColor === 'rgb(255, 255, 255)';
+        
+        this.container.classList.toggle('light-mode', isLightMode);
+    },
+
+    /**
+     * Observes changes to the body to detect theme changes
+     */
+    _setupThemeObserver() {
+        const themeObserver = new MutationObserver(() => this._updateTheme());
+        themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class', 'style'] });
     },
 
     /**

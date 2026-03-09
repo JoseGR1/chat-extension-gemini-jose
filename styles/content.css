@@ -1,18 +1,40 @@
 /* CSS for Gemini Navigator - Unified Panel */
 
 :root {
+    /* Base Variables (Shared) */
+    --gemini-nav-radius: 20px;
+    --gemini-nav-width: 250px;
+    --gemini-nav-marker-rail: 32px;
+    
+    /* Dark Theme (Default) */
     --gemini-nav-bg: #1e1f20;
     --gemini-nav-text: #e8eaed;
     --gemini-nav-accent: #8ab4f8;
     --gemini-nav-accent-soft: rgba(138, 180, 248, 0.12);
     --gemini-nav-border: rgba(255, 255, 255, 0.1);
     --gemini-nav-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
-    --gemini-nav-radius: 20px;
-    --gemini-nav-width: 250px;
-    /* More compact width */
-    --gemini-nav-marker-rail: 32px;
-    /* Tighter rail */
-    /* Space reserved for markers */
+}
+
+/* Light Mode Overrides */
+@media (prefers-color-scheme: light) {
+    :root {
+        --gemini-nav-bg: #ffffff;
+        --gemini-nav-text: #3c4043;
+        --gemini-nav-accent: #1a73e8;
+        --gemini-nav-accent-soft: rgba(26, 115, 232, 0.12);
+        --gemini-nav-border: rgba(0, 0, 0, 0.1);
+        --gemini-nav-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+    }
+}
+
+/* Fallback/Explicit Light Mode Class */
+.light-mode {
+    --gemini-nav-bg: #ffffff;
+    --gemini-nav-text: #3c4043;
+    --gemini-nav-accent: #1a73e8;
+    --gemini-nav-accent-soft: rgba(26, 115, 232, 0.12);
+    --gemini-nav-border: rgba(0, 0, 0, 0.1);
+    --gemini-nav-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
 }
 
 /* Base Container */
@@ -196,10 +218,12 @@
     width: 8px;
     /* Smaller default marker */
     height: 2px;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--gemini-nav-text);
+    opacity: 0.2;
     border-radius: 4px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 
 /* Interaction: Hover on Item */
 .gemini-nav-item:hover {
@@ -254,12 +278,15 @@
 
 /* Marker RAIL opacity tweak for collapsed mode */
 .gemini-nav-root.collapsed .gemini-nav-marker {
-    background-color: rgba(255, 255, 255, 0.25);
+    background-color: var(--gemini-nav-text);
+    opacity: 0.25;
 }
 
 .gemini-nav-root.collapsed .gemini-nav-item.active .gemini-nav-marker {
     background-color: var(--gemini-nav-accent);
+    opacity: 1;
 }
+
 
 /* Remove unused elements */
 .gemini-nav-header,
