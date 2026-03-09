@@ -1,0 +1,289 @@
+/* CSS for Gemini Navigator - Unified Panel */
+
+:root {
+    --gemini-nav-bg: #1e1f20;
+    --gemini-nav-text: #e8eaed;
+    --gemini-nav-accent: #8ab4f8;
+    --gemini-nav-accent-soft: rgba(138, 180, 248, 0.12);
+    --gemini-nav-border: rgba(255, 255, 255, 0.1);
+    --gemini-nav-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+    --gemini-nav-radius: 20px;
+    --gemini-nav-width: 250px;
+    /* More compact width */
+    --gemini-nav-marker-rail: 32px;
+    /* Tighter rail */
+    /* Space reserved for markers */
+}
+
+/* Base Container */
+.gemini-nav-root {
+    position: fixed;
+    top: 50%;
+    right: 18px;
+    transform: translateY(-50%);
+    z-index: 10000;
+    font-family: 'Google Sans', Roboto, sans-serif;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+/* Responsiveness: Height-based scaling */
+@media (max-height: 600px) {
+    .gemini-nav-list {
+        height: 192px !important;
+        /* Limit to approx 6 items */
+    }
+}
+
+@media (max-height: 400px) {
+    .gemini-nav-list {
+        height: 128px !important;
+        /* Limit to approx 4 items */
+    }
+}
+
+/* Responsiveness: Width-based scaling */
+@media (max-width: 900px) {
+    :root {
+        --gemini-nav-width: 220px;
+        --gemini-nav-marker-rail: 28px;
+    }
+
+    .gemini-nav-root {
+        right: 10px;
+    }
+}
+
+@media (max-width: 600px) {
+
+    /* More aggressive on small screens */
+    :root {
+        --gemini-nav-width: 180px;
+    }
+
+    .gemini-nav-item-text {
+        font-size: 11px;
+        padding-left: 12px;
+    }
+}
+
+/* Hide if extremely small to avoid UI collision */
+@media (max-width: 480px) {
+    .gemini-nav-root {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-50%) translateX(50px);
+    }
+}
+
+.gemini-nav-root * {
+    box-sizing: border-box;
+}
+
+/* The Panel (Bubble) */
+.gemini-nav-panel {
+    width: var(--gemini-nav-width);
+    max-height: 80vh;
+    background-color: var(--gemini-nav-bg);
+    border: 1px solid var(--gemini-nav-border);
+    border-radius: var(--gemini-nav-radius);
+    box-shadow: var(--gemini-nav-shadow);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
+    opacity: 1;
+}
+
+/* Collapsed State: Shrink width to only show the markers rail */
+.gemini-nav-root.collapsed .gemini-nav-panel {
+    width: var(--gemini-nav-marker-rail);
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+/* List Container - Limited to 10 items at 32px each */
+.gemini-nav-list {
+    padding: 12px 0;
+    /* Slightly more padding for the mask */
+    overflow-y: auto;
+    height: 332px;
+    /* Adjusted height to account for mask/padding */
+    scrollbar-width: none;
+    /* Hide for Firefox default */
+    -ms-overflow-style: none;
+    /* Hide for IE/Edge */
+    scroll-behavior: smooth;
+    /* Tighter fade at top and bottom to avoid obscuring visible markers */
+    -webkit-mask-image: linear-gradient(to bottom,
+            transparent 0%,
+            black 5%,
+            black 95%,
+            transparent 100%);
+    mask-image: linear-gradient(to bottom,
+            transparent 0%,
+            black 5%,
+            black 95%,
+            transparent 100%);
+}
+
+/* Hide scrollbar when root is collapsed */
+.gemini-nav-root.collapsed .gemini-nav-list::-webkit-scrollbar {
+    display: none;
+}
+
+/* Scrollbar styling for expanded state */
+.gemini-nav-list::-webkit-scrollbar {
+    width: 3px;
+}
+
+.gemini-nav-list::-webkit-scrollbar-thumb {
+    background-color: var(--gemini-nav-border);
+    border-radius: 10px;
+}
+
+/* Base styles for root expanded state scrollbar */
+.gemini-nav-root:not(.collapsed) .gemini-nav-list::-webkit-scrollbar {
+    display: block;
+}
+
+/* Individual Item */
+.gemini-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    /* Align elements to the right rail */
+    padding: 0;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    height: 32px;
+    /* Fixed height for 10-line calculation */
+}
+
+/* Text Section */
+.gemini-nav-item-text {
+    flex: 1;
+    padding: 0 10px 0 20px;
+    /* Reduced paddings */
+    font-size: 12.5px;
+    /* Smaller text */
+    color: var(--gemini-nav-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 1;
+    transition: opacity 0.3s ease, color 0.2s;
+}
+
+/* Hide text when collapsed */
+.gemini-nav-root.collapsed .gemini-nav-item-text {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Marker Rail (Right side of each item) */
+.gemini-nav-marker-wrapper {
+    width: var(--gemini-nav-marker-rail);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    height: 100%;
+}
+
+/* The Marker itself */
+.gemini-nav-marker {
+    width: 8px;
+    /* Smaller default marker */
+    height: 2px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Interaction: Hover on Item */
+.gemini-nav-item:hover {
+    background-color: transparent;
+    /* Removed shading as requested */
+}
+
+.gemini-nav-item:hover .gemini-nav-item-text {
+    opacity: 1;
+    color: var(--gemini-nav-accent);
+}
+
+.gemini-nav-item:hover .gemini-nav-marker {
+    background-color: var(--gemini-nav-accent);
+    width: 15px;
+    /* Scaled hover size */
+    opacity: 1;
+}
+
+/* Interaction: Active Item */
+.gemini-nav-item.active {
+    background-color: transparent;
+    /* Removed shading as requested */
+}
+
+.gemini-nav-item.active .gemini-nav-item-text {
+    color: var(--gemini-nav-accent);
+    font-weight: 500;
+    opacity: 1;
+}
+
+.gemini-nav-item.active .gemini-nav-marker {
+    background-color: var(--gemini-nav-accent);
+    width: 20px;
+    /* Scaled active size */
+    height: 2.5px;
+    /* Slightly thinner active bar */
+    opacity: 1;
+    box-shadow: 0 0 8px var(--gemini-nav-accent-soft);
+    /* Subtle glow instead of box */
+}
+
+/* Scrollbar */
+.gemini-nav-list::-webkit-scrollbar {
+    width: 3px;
+}
+
+.gemini-nav-list::-webkit-scrollbar-thumb {
+    background-color: var(--gemini-nav-border);
+    border-radius: 10px;
+}
+
+/* Marker RAIL opacity tweak for collapsed mode */
+.gemini-nav-root.collapsed .gemini-nav-marker {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+.gemini-nav-root.collapsed .gemini-nav-item.active .gemini-nav-marker {
+    background-color: var(--gemini-nav-accent);
+}
+
+/* Remove unused elements */
+.gemini-nav-header,
+.gemini-nav-handle,
+.gemini-nav-collapsed-bar {
+    display: none;
+}
+
+.gemini-nav-empty {
+    padding: 24px;
+    font-size: 13px;
+    color: var(--gemini-nav-text);
+    opacity: 0.4;
+    text-align: center;
+}
+
+/* Message Highlight Glow (used when navigating) */
+.gemini-nav-highlight {
+    outline: 3px solid var(--gemini-nav-accent) !important;
+    outline-offset: 6px !important;
+    border-radius: 12px !important;
+    transition: outline 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.gemini-nav-highlight-hide {
+    outline-color: transparent !important;
+}
